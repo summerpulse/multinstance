@@ -1,6 +1,11 @@
 package com.example.multinstance;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import android.app.Activity;
+import android.content.ContextWrapper;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -9,6 +14,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnVideoSizeChangedListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,12 +24,12 @@ public class MultipleVideoPlayActivity extends Activity implements
 		OnVideoSizeChangedListener, SurfaceHolder.Callback
 {
 	private static final String TAG = "MediaPlayer";
-	private static final int[] SURFACE_RES_IDS ={ 
-												 R.id.video_1_surfaceview, 
-												 R.id.video_2_surfaceview,
-												 R.id.video_3_surfaceview 
-												};
-	
+	private static final int[] SURFACE_RES_IDS =
+	{ R.id.video_1_surfaceview
+	, R.id.video_2_surfaceview
+	, R.id.video_3_surfaceview
+	};
+
 	private MediaPlayer[] mMediaPlayers = new MediaPlayer[SURFACE_RES_IDS.length];
 	private SurfaceView[] mSurfaceViews = new SurfaceView[SURFACE_RES_IDS.length];
 	private SurfaceHolder[] mSurfaceHolders = new SurfaceHolder[SURFACE_RES_IDS.length];
@@ -35,7 +41,23 @@ public class MultipleVideoPlayActivity extends Activity implements
 	{
 		super.onCreate(icicle);
 		setContentView(R.layout.multi_videos_layout);
-		Log.d(TAG, "SURFACE_RES_IDS.length=" + SURFACE_RES_IDS.length );
+		Log.d(TAG,
+				"SURFACE_RES_IDS.length=" + SURFACE_RES_IDS.length
+						+ ", Environment.getExternalStorageDirectory="
+						+ Environment.getExternalStorageDirectory());
+		createPath("waththefuck");
+		ContextWrapper c = new ContextWrapper(this);
+		Log.d(TAG,
+				"Context.getApplicationInfo().dataDir="
+						+ c.getApplicationInfo().dataDir);
+		try
+		{
+			writeFile("abc","def");
+		} catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// create surface holders
 		for (int i = 0; i < mSurfaceViews.length; i++)
 		{
@@ -115,9 +137,23 @@ public class MultipleVideoPlayActivity extends Activity implements
 		try
 		{
 			mMediaPlayers[index] = new MediaPlayer();
-			AssetFileDescriptor afd = getAssets().openFd("sample.3gp");
-			mMediaPlayers[index].setDataSource(afd.getFileDescriptor(),
-					afd.getStartOffset(), afd.getLength());
+			//AssetFileDescriptor afd = getAssets().openFd("small.3gp");
+			// mMediaPlayers[index].setDataSource(afd.getFileDescriptor(),
+			// afd.getStartOffset(), afd.getLength());
+			Log.d(TAG, "index=" + index);
+
+			switch(index)
+			{
+			case 0:
+				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/world.mp4");
+				break;
+			case 1:
+				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/small.mp4");
+				break;
+			case 2:
+				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/test.mp4");
+			}
+			
 			mMediaPlayers[index].setDisplay(mSurfaceHolders[index]);
 			mMediaPlayers[index].prepare();
 			mMediaPlayers[index].setOnBufferingUpdateListener(this);
@@ -177,5 +213,32 @@ public class MultipleVideoPlayActivity extends Activity implements
 			if (mSurfaceHolders[i] == holder)
 				return i;
 		return -1;
+	}
+
+	/**
+	 * 5、创建目录
+	 */
+	private void createPath(String path)
+	{
+		File file = new File(path);
+		if (!file.exists())
+		{
+			file.mkdir();
+		}
+	}
+
+	// /读写/data/data/<应用程序名>目录上的文件:
+	public void writeFile(String fileName, String writestr) throws IOException
+	{
+		try
+		{
+			FileOutputStream fout = openFileOutput(fileName, MODE_PRIVATE);
+			byte[] bytes = writestr.getBytes();
+			fout.write(bytes);
+			fout.close();
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
