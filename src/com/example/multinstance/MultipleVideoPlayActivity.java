@@ -25,10 +25,7 @@ public class MultipleVideoPlayActivity extends Activity implements
 {
 	private static final String TAG = "MediaPlayer";
 	private static final int[] SURFACE_RES_IDS =
-	{ R.id.video_1_surfaceview
-	, R.id.video_2_surfaceview
-	, R.id.video_3_surfaceview
-	};
+	{ R.id.video_1_surfaceview, R.id.video_2_surfaceview };
 
 	private MediaPlayer[] mMediaPlayers = new MediaPlayer[SURFACE_RES_IDS.length];
 	private SurfaceView[] mSurfaceViews = new SurfaceView[SURFACE_RES_IDS.length];
@@ -52,7 +49,7 @@ public class MultipleVideoPlayActivity extends Activity implements
 						+ c.getApplicationInfo().dataDir);
 		try
 		{
-			writeFile("abc","def");
+			writeFile("abc", "def");
 		} catch (IOException e)
 		{
 			// TODO Auto-generated catch block
@@ -137,23 +134,23 @@ public class MultipleVideoPlayActivity extends Activity implements
 		try
 		{
 			mMediaPlayers[index] = new MediaPlayer();
-			//AssetFileDescriptor afd = getAssets().openFd("small.3gp");
+			// AssetFileDescriptor afd = getAssets().openFd("small.3gp");
 			// mMediaPlayers[index].setDataSource(afd.getFileDescriptor(),
 			// afd.getStartOffset(), afd.getLength());
 			Log.d(TAG, "index=" + index);
 
-			switch(index)
+			switch (index)
 			{
 			case 0:
-				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/world.mp4");
+				mMediaPlayers[index]
+						.setDataSource("http://10.18.29.135:81/ali/world.mp4");
 				break;
 			case 1:
-				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/small.mp4");
+				mMediaPlayers[index]
+						.setDataSource("http://10.18.29.135:81/ali/small.mp4");
 				break;
-			case 2:
-				mMediaPlayers[index].setDataSource("http://10.18.29.135:81/ali/test.mp4");
 			}
-			
+
 			mMediaPlayers[index].setDisplay(mSurfaceHolders[index]);
 			mMediaPlayers[index].prepare();
 			mMediaPlayers[index].setOnBufferingUpdateListener(this);

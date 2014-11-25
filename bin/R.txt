@@ -286,7 +286,6 @@ int id up 0x7f050021
 int id useLogo 0x7f050003
 int id video_1_surfaceview 0x7f05003c
 int id video_2_surfaceview 0x7f05003d
-int id video_3_surfaceview 0x7f05003e
 int id withText 0x7f05000c
 int integer abc_max_action_buttons 0x7f090000
 int layout abc_action_bar_decor 0x7f030000
