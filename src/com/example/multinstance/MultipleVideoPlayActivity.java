@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.LinearLayout;
 
 public class MultipleVideoPlayActivity extends Activity implements
 		OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
@@ -111,10 +112,33 @@ public class MultipleVideoPlayActivity extends Activity implements
 		}
 	}
 
-	public void surfaceChanged(SurfaceHolder holder, int i, int j, int k)
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
 	{
 		Log.d(TAG, "SurfaceHolder(" + indexOf(holder)
-				+ "): surfaceChanged called");
+				+ "): surfaceChanged called,"+"width="+width+",height="+height);
+		//Camera.Parameters parameters = camera.getParameters();// 获得相机参数
+		//Size s = parameters.getPictureSize();
+		int index = indexOf(holder);
+		double w = mMediaPlayers[index].getVideoWidth();
+		double h = mMediaPlayers[index].getVideoHeight();;
+		
+		if (width > height)
+		{
+			mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(
+					(int) (height * (w / h)), height));
+			Log.d(TAG, "mediaplayer:"+index+" has changed to width:"+((int) (height * (w / h)))+", height"+height);
+		} else
+		{
+			mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(width,
+					(int) (width * (h / w))));
+			Log.d(TAG, "mediaplayer:"+index+" has changed to width:"+width+", height"+((int) (width * (h / w))));
+		}
+		
+//		parameters.setPreviewSize(width, height); // 设置预览图像大小
+//		parameters.setPictureFormat(PixelFormat.JPEG); // 设置照片格式
+//
+//		camera.setParameters(parameters);// 设置相机参数
+//		camera.startPreview();// 开始预览
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder)
@@ -143,11 +167,11 @@ public class MultipleVideoPlayActivity extends Activity implements
 			{
 			case 0:
 				mMediaPlayers[index]
-						.setDataSource("http://10.18.29.135:81/ali/world.mp4");
+						.setDataSource("http://10.18.29.135:81/ali/small.mp4");
 				break;
 			case 1:
 				mMediaPlayers[index]
-						.setDataSource("http://10.18.29.135:81/ali/small.mp4");
+						.setDataSource("http://10.18.29.135:81/ali/world.mp4");
 				break;
 			}
 
