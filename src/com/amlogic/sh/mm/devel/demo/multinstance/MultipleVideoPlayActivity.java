@@ -1,19 +1,17 @@
-package com.example.multinstance;
-
+package com.amlogic.sh.mm.devel.demo.multinstance;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import android.app.Activity;
-import android.content.ContextWrapper;
+
 
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-
 import android.media.MediaCodec.BufferInfo;
-
+import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -22,8 +20,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 
-public class MultipleVideoPlayActivity extends Activity implements
-		 SurfaceHolder.Callback
+public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder.Callback
+//OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
+//OnVideoSizeChangedListener, 
 {
 	private static final String TAG = "MediaCodec";
 	private static final int[] SURFACE_RES_IDS =
@@ -35,6 +34,7 @@ public class MultipleVideoPlayActivity extends Activity implements
 	private boolean[] mSizeKnown = new boolean[SURFACE_RES_IDS.length];
 	private boolean[] mVideoReady = new boolean[SURFACE_RES_IDS.length];
 	private PlayerThread[] mPlayers= new PlayerThread[SURFACE_RES_IDS.length];
+	private String[] mUries = new String[SURFACE_RES_IDS.length];
 
 	@Override
 	public void onCreate(Bundle icicle)
@@ -54,6 +54,8 @@ public class MultipleVideoPlayActivity extends Activity implements
 			mSurfaceHolders[i].addCallback(this);
 			mSurfaceHolders[i].setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
+		
+		
 	}
 
 //	public void onBufferingUpdate(MediaPlayer player, int percent)
@@ -155,7 +157,13 @@ public class MultipleVideoPlayActivity extends Activity implements
 
 		if (mPlayers[index] == null)
 		{
-			String uri = System.getProperty("media.test.uri"+index, "/data/media/0/small.mp4");
+			String defaultUri;
+			if(index==0)
+				defaultUri = "/data/media/0/small.mp4";
+			else
+				defaultUri = "/data/media/0/test.mp4";
+			String uri = System.getProperty("media.test.uri"+index, defaultUri);
+			Log.d(TAG, "============="+System.getProperty("media.test.uri0"));
 			Log.d(TAG, "index="+index+", uri="+uri);
 			mPlayers[index] = new PlayerThread(holder.getSurface(), uri);
 			
