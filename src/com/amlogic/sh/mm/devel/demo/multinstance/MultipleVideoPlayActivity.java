@@ -1,17 +1,18 @@
 package com.amlogic.sh.mm.devel.demo.multinstance;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import android.app.Activity;
-
-
+import android.content.res.AssetManager;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -19,21 +20,21 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-
 public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder.Callback
-//OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
-//OnVideoSizeChangedListener, 
+// OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
+// OnVideoSizeChangedListener,
 {
 	private static final String TAG = "MediaCodec";
 	private static final int[] SURFACE_RES_IDS =
 	{ R.id.video_1_surfaceview, R.id.video_2_surfaceview };
 
-//	private MediaPlayer[] mMediaPlayers = new MediaPlayer[SURFACE_RES_IDS.length];
+	// private MediaPlayer[] mMediaPlayers = new
+	// MediaPlayer[SURFACE_RES_IDS.length];
 	private SurfaceView[] mSurfaceViews = new SurfaceView[SURFACE_RES_IDS.length];
 	private SurfaceHolder[] mSurfaceHolders = new SurfaceHolder[SURFACE_RES_IDS.length];
 	private boolean[] mSizeKnown = new boolean[SURFACE_RES_IDS.length];
 	private boolean[] mVideoReady = new boolean[SURFACE_RES_IDS.length];
-	private PlayerThread[] mPlayers= new PlayerThread[SURFACE_RES_IDS.length];
+	private PlayerThread[] mPlayers = new PlayerThread[SURFACE_RES_IDS.length];
 	private String[] mUries = new String[SURFACE_RES_IDS.length];
 
 	@Override
@@ -42,8 +43,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		super.onCreate(icicle);
 		setContentView(R.layout.multi_videos_layout);
 		Log.d(TAG,
-				"SURFACE_RES_IDS.length=" + SURFACE_RES_IDS.length
-						+ ", Environment.getExternalStorageDirectory="
+				"SURFACE_RES_IDS.length=" + SURFACE_RES_IDS.length + ", Environment.getExternalStorageDirectory="
 						+ Environment.getExternalStorageDirectory());
 
 		// create surface holders
@@ -54,194 +54,205 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 			mSurfaceHolders[i].addCallback(this);
 			mSurfaceHolders[i].setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
-		
-		
+
 	}
 
-//	public void onBufferingUpdate(MediaPlayer player, int percent)
-//	{
-//		Log.d(TAG, "MediaPlayer(" + indexOf(player)
-//				+ "): onBufferingUpdate percent: " + percent);
-//	}
-//
-//	public void onCompletion(MediaPlayer player)
-//	{
-//		Log.d(TAG, "MediaPlayer(" + indexOf(player) + "): onCompletion called");
-//	}
+	// public void onBufferingUpdate(MediaPlayer player, int percent)
+	// {
+	// Log.d(TAG, "MediaPlayer(" + indexOf(player)
+	// + "): onBufferingUpdate percent: " + percent);
+	// }
+	//
+	// public void onCompletion(MediaPlayer player)
+	// {
+	// Log.d(TAG, "MediaPlayer(" + indexOf(player) + "): onCompletion called");
+	// }
 
-//	public void onVideoSizeChanged(MediaPlayer player, int width, int height)
-//	{
-//		Log.v(TAG, "MediaPlayer(" + indexOf(player)
-//				+ "): onVideoSizeChanged called");
-//		if (width == 0 || height == 0)
-//		{
-//			Log.e(TAG, "invalid video width(" + width + ") or height(" + height
-//					+ ")");
-//			return;
-//		}
-//
-//		int index = indexOf(player);
-//		if (index == -1)
-//			return; // sanity check; should never happen
-//		mSizeKnown[index] = true;
-//		if (mVideoReady[index] && mSizeKnown[index])
-//		{
-//			startVideoPlayback(player);
-//		}
-//	}
+	// public void onVideoSizeChanged(MediaPlayer player, int width, int height)
+	// {
+	// Log.v(TAG, "MediaPlayer(" + indexOf(player)
+	// + "): onVideoSizeChanged called");
+	// if (width == 0 || height == 0)
+	// {
+	// Log.e(TAG, "invalid video width(" + width + ") or height(" + height
+	// + ")");
+	// return;
+	// }
+	//
+	// int index = indexOf(player);
+	// if (index == -1)
+	// return; // sanity check; should never happen
+	// mSizeKnown[index] = true;
+	// if (mVideoReady[index] && mSizeKnown[index])
+	// {
+	// startVideoPlayback(player);
+	// }
+	// }
 
-//	public void onPrepared(MediaPlayer player)
-//	{
-//		Log.d(TAG, "MediaPlayer(" + indexOf(player) + "): onPrepared called");
-//
-//		int index = indexOf(player);
-//		if (index == -1)
-//			return; // sanity check; should never happen
-//		mVideoReady[index] = true;
-//		if (mVideoReady[index] && mSizeKnown[index])
-//		{
-//			startVideoPlayback(player);
-//		}
-//	}
+	// public void onPrepared(MediaPlayer player)
+	// {
+	// Log.d(TAG, "MediaPlayer(" + indexOf(player) + "): onPrepared called");
+	//
+	// int index = indexOf(player);
+	// if (index == -1)
+	// return; // sanity check; should never happen
+	// mVideoReady[index] = true;
+	// if (mVideoReady[index] && mSizeKnown[index])
+	// {
+	// startVideoPlayback(player);
+	// }
+	// }
 
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height)
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
 	{
-		Log.d(TAG, "SurfaceHolder(" + indexOf(holder)
-				+ "): surfaceChanged called," + "width=" + width + ",height="
-				+ height);
-		
+		Log.d(TAG, "SurfaceHolder(" + indexOf(holder) + "): surfaceChanged called," + "width=" + width + ",height=" + height);
+
 		int index = indexOf(holder);
 		mPlayers[index].start();
-		
-		
-//		double w = mMediaPlayers[index].getVideoWidth();
-//		double h = mMediaPlayers[index].getVideoHeight();
-//
-//		if (width > height)
-//		{
-//			mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(
-//					(int) (height * (w / h)), height));
-//			Log.d(TAG, "mediaplayer:" + index + " has changed to width:"
-//					+ ((int) (height * (w / h))) + ", height" + height);
-//		} 
-//		else
-//		{
-//			mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(
-//					width, (int) (width * (h / w))));
-//			Log.d(TAG, "mediaplayer:" + index + " has changed to width:"
-//					+ width + ", height" + ((int) (width * (h / w))));
-//		}
+
+		// double w = mMediaPlayers[index].getVideoWidth();
+		// double h = mMediaPlayers[index].getVideoHeight();
+		//
+		// if (width > height)
+		// {
+		// mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(
+		// (int) (height * (w / h)), height));
+		// Log.d(TAG, "mediaplayer:" + index + " has changed to width:"
+		// + ((int) (height * (w / h))) + ", height" + height);
+		// }
+		// else
+		// {
+		// mSurfaceViews[index].setLayoutParams(new LinearLayout.LayoutParams(
+		// width, (int) (width * (h / w))));
+		// Log.d(TAG, "mediaplayer:" + index + " has changed to width:"
+		// + width + ", height" + ((int) (width * (h / w))));
+		// }
 	}
+
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder)
 	{
-		Log.d(TAG, "SurfaceHolder(" + indexOf(holder)
-				+ "): surfaceDestroyed called");
+		Log.d(TAG, "SurfaceHolder(" + indexOf(holder) + "): surfaceDestroyed called");
 
 		int index = indexOf(holder);
 		if (mPlayers[index] != null)
 		{
 			mPlayers[index].interrupt();
 		}
-		
+
+	}
+
+	private String getMovideFileName(int index)
+	{
+		if(index<0)
+			return null;
+		Uri uri;
+		switch(index)
+		{
+		case(0):
+			uri = Uri.parse("android.resource://com.amlogic.sh.mm.devel.demo.multinstance/" + R.raw.small);
+			break;
+		case(1):
+			uri = Uri.parse("android.resource://com.amlogic.sh.mm.devel.demo.multinstance/" + R.raw.world);
+			break;
+		default:
+			uri=null;
+		}
+		return uri.getPath();
 	}
 
 	public void surfaceCreated(SurfaceHolder holder)
 	{
-		Log.d(TAG, "SurfaceHolder(" + indexOf(holder)
-				+ "): surfaceCreated called");
+		Log.d(TAG, "SurfaceHolder(" + indexOf(holder) + "): surfaceCreated called");
 
-		
 		int index = indexOf(holder);
 
 		if (mPlayers[index] == null)
 		{
 			String defaultUri;
-			if(index==0)
+			if (index == 0)
 				defaultUri = "/data/media/0/small.mp4";
 			else
 				defaultUri = "/data/media/0/test.mp4";
-			String uri = System.getProperty("media.test.uri"+index, defaultUri);
-			Log.d(TAG, "============="+System.getProperty("media.test.uri0"));
-			Log.d(TAG, "index="+index+", uri="+uri);
-			mPlayers[index] = new PlayerThread(holder.getSurface(), uri);
-			
+			String uri = System.getProperty("media.test.uri" + index, defaultUri);
+			Log.d(TAG, "=============" + System.getProperty("media.test.uri0"));
+			Log.d(TAG, "index=" + index + ", uri=" + uri);
+			mPlayers[index] = new PlayerThread(holder.getSurface(), getMovideFileName(index));
+
 		}
-		
-		
-//		int index = indexOf(holder);
-//		if (index == -1)
-//			return; // sanity check; should never happen
-//		try
-//		{
-//			mMediaPlayers[index] = new MediaPlayer();
-//			Log.d(TAG, "index=" + index);
-//
-//			switch (index)
-//			{
-//			case 0:
-//				mMediaPlayers[index]
-//						.setDataSource("http://10.18.29.135:81/ali/small.mp4");
-//				break;
-//			case 1:
-//				mMediaPlayers[index]
-//						.setDataSource("http://10.18.29.135:81/ali/world.mp4");
-//				break;
-//			}
-//
-//			mMediaPlayers[index].setDisplay(mSurfaceHolders[index]);
-//			mMediaPlayers[index].prepare();
-//			mMediaPlayers[index].setOnBufferingUpdateListener(this);
-//			mMediaPlayers[index].setOnCompletionListener(this);
-//			mMediaPlayers[index].setOnPreparedListener(this);
-//			mMediaPlayers[index].setOnVideoSizeChangedListener(this);
-//			mMediaPlayers[index].setAudioStreamType(AudioManager.STREAM_MUSIC);
-//		} catch (Exception e)
-//		{
-//			e.printStackTrace();
-//		}
+
+		// int index = indexOf(holder);
+		// if (index == -1)
+		// return; // sanity check; should never happen
+		// try
+		// {
+		// mMediaPlayers[index] = new MediaPlayer();
+		// Log.d(TAG, "index=" + index);
+		//
+		// switch (index)
+		// {
+		// case 0:
+		// mMediaPlayers[index]
+		// .setDataSource("http://10.18.29.135:81/ali/small.mp4");
+		// break;
+		// case 1:
+		// mMediaPlayers[index]
+		// .setDataSource("http://10.18.29.135:81/ali/world.mp4");
+		// break;
+		// }
+		//
+		// mMediaPlayers[index].setDisplay(mSurfaceHolders[index]);
+		// mMediaPlayers[index].prepare();
+		// mMediaPlayers[index].setOnBufferingUpdateListener(this);
+		// mMediaPlayers[index].setOnCompletionListener(this);
+		// mMediaPlayers[index].setOnPreparedListener(this);
+		// mMediaPlayers[index].setOnVideoSizeChangedListener(this);
+		// mMediaPlayers[index].setAudioStreamType(AudioManager.STREAM_MUSIC);
+		// } catch (Exception e)
+		// {
+		// e.printStackTrace();
+		// }
 	}
 
-//	@Override
-//	protected void onPause()
-//	{
-//		super.onPause();
-//		releaseMediaPlayers();
-//	}
-//
-//	@Override
-//	protected void onDestroy()
-//	{
-//		super.onDestroy();
-//		releaseMediaPlayers();
-//	}
+	// @Override
+	// protected void onPause()
+	// {
+	// super.onPause();
+	// releaseMediaPlayers();
+	// }
+	//
+	// @Override
+	// protected void onDestroy()
+	// {
+	// super.onDestroy();
+	// releaseMediaPlayers();
+	// }
 
-//	private void releaseMediaPlayers()
-//	{
-//		for (int i = 0; i < mMediaPlayers.length; i++)
-//		{
-//			if (mMediaPlayers[i] != null)
-//			{
-//				mMediaPlayers[i].release();
-//				mMediaPlayers[i] = null;
-//			}
-//		}
-//	}
+	// private void releaseMediaPlayers()
+	// {
+	// for (int i = 0; i < mMediaPlayers.length; i++)
+	// {
+	// if (mMediaPlayers[i] != null)
+	// {
+	// mMediaPlayers[i].release();
+	// mMediaPlayers[i] = null;
+	// }
+	// }
+	// }
 
-//	private void startVideoPlayback(MediaPlayer player)
-//	{
-//		Log.v(TAG, "MediaPlayer(" + indexOf(player) + "): startVideoPlayback");
-//		player.start();
-//	}
+	// private void startVideoPlayback(MediaPlayer player)
+	// {
+	// Log.v(TAG, "MediaPlayer(" + indexOf(player) + "): startVideoPlayback");
+	// player.start();
+	// }
 
-//	private int indexOf(MediaPlayer player)
-//	{
-//		for (int i = 0; i < mMediaPlayers.length; i++)
-//			if (mMediaPlayers[i] == player)
-//				return i;
-//		return -1;
-//	}
+	// private int indexOf(MediaPlayer player)
+	// {
+	// for (int i = 0; i < mMediaPlayers.length; i++)
+	// if (mMediaPlayers[i] == player)
+	// return i;
+	// return -1;
+	// }
 
 	private int indexOf(SurfaceHolder holder)
 	{
@@ -295,6 +306,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		public void run()
 		{
 			extractor = new MediaExtractor();
+
 			extractor.setDataSource(uri);
 
 			for (int i = 0; i < extractor.getTrackCount(); i++)
@@ -339,15 +351,12 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 							// just pass the EOS
 							// flag to decoder, we will get it again from the
 							// dequeueOutputBuffer
-							Log.d("DecodeActivity",
-									"InputBuffer BUFFER_FLAG_END_OF_STREAM");
-							decoder.queueInputBuffer(inIndex, 0, 0, 0,
-									MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+							Log.d("DecodeActivity", "InputBuffer BUFFER_FLAG_END_OF_STREAM");
+							decoder.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
 							isEOS = true;
 						} else
 						{
-							decoder.queueInputBuffer(inIndex, 0, sampleSize,
-									extractor.getSampleTime(), 0);
+							decoder.queueInputBuffer(inIndex, 0, sampleSize, extractor.getSampleTime(), 0);
 							extractor.advance();
 						}
 					}
@@ -361,23 +370,19 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 					outputBuffers = decoder.getOutputBuffers();
 					break;
 				case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
-					Log.d("DecodeActivity",
-							"New format " + decoder.getOutputFormat());
+					Log.d("DecodeActivity", "New format " + decoder.getOutputFormat());
 					break;
 				case MediaCodec.INFO_TRY_AGAIN_LATER:
 					Log.d("DecodeActivity", "dequeueOutputBuffer timed out!");
 					break;
 				default:
 					ByteBuffer buffer = outputBuffers[outIndex];
-					Log.v("DecodeActivity",
-							"We can't use this buffer but render it due to the API limit, "
-									+ buffer);
+					Log.v("DecodeActivity", "We can't use this buffer but render it due to the API limit, " + buffer);
 
 					// We use a very simple clock to keep the video FPS, or the
 					// video
 					// playback will be too fast
-					while (info.presentationTimeUs / 1000 > System
-							.currentTimeMillis() - startMs)
+					while (info.presentationTimeUs / 1000 > System.currentTimeMillis() - startMs)
 					{
 						try
 						{
@@ -396,8 +401,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 				// now
 				if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0)
 				{
-					Log.d("DecodeActivity",
-							"OutputBuffer BUFFER_FLAG_END_OF_STREAM");
+					Log.d("DecodeActivity", "OutputBuffer BUFFER_FLAG_END_OF_STREAM");
 					break;
 				}
 			}
