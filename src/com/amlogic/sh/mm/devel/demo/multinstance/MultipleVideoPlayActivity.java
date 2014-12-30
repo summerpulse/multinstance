@@ -263,7 +263,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 	}
 
 	/**
-	 * 5¡¢´´½¨Ä¿Â¼
+	 * 5ã€åˆ›å»ºç›®å½•
 	 */
 	private void createPath(String path)
 	{
@@ -274,7 +274,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		}
 	}
 
-	// /¶ÁĞ´/data/data/<Ó¦ÓÃ³ÌĞòÃû>Ä¿Â¼ÉÏµÄÎÄ¼ş:
+	// /è¯»å†™/data/data/<åº”ç”¨ç¨‹åºå>ç›®å½•ä¸Šçš„æ–‡ä»¶:
 	public void writeFile(String fileName, String writestr) throws IOException
 	{
 		try
@@ -405,7 +405,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 					break;
 				}
 			}
-
+                        this.surface.release();
 			decoder.stop();
 			decoder.release();
 			extractor.release();
