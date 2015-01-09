@@ -19,7 +19,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
+import android.os.SystemProperties;
 public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder.Callback
 // OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
 // OnVideoSizeChangedListener,
@@ -135,6 +135,8 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		Log.d(TAG, "SurfaceHolder(" + indexOf(holder) + "): surfaceDestroyed called");
 
 		int index = indexOf(holder);
+		mSurfaceHolders[index].getSurface().release();
+		Log.d(TAG, String.format("surface %d released",index));
 		if (mPlayers[index] != null)
 		{
 			mPlayers[index].interrupt();
@@ -146,19 +148,26 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 	{
 		if(index<0)
 			return null;
-		Uri uri;
+		String uri;
 		switch(index)
 		{
 		case(0):
-			uri = Uri.parse("android.resource://com.amlogic.sh.mm.devel.demo.multinstance/" + R.raw.small);
+			uri = getSysProp("demo.multinstance.uri1", "/storage/external_storage/sdcard1/video1.mp4");
+
 			break;
 		case(1):
-			uri = Uri.parse("android.resource://com.amlogic.sh.mm.devel.demo.multinstance/" + R.raw.world);
+			uri = getSysProp("demo.multinstance.uri2", "/storage/external_storage/sdcard1/video1.mp4");
+
 			break;
 		default:
 			uri=null;
 		}
-		return uri.getPath();
+		Log.d(TAG, String.format("demo.multinstance.uri%d=%s",index, uri));
+		return uri;
+	}
+	String getSysProp(String propName, String defaultValue)
+	{
+		return SystemProperties.get(propName, defaultValue);
 	}
 
 	public void surfaceCreated(SurfaceHolder holder)
@@ -169,16 +178,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 
 		if (mPlayers[index] == null)
 		{
-			String defaultUri;
-			if (index == 0)
-				defaultUri = "/data/media/0/small.mp4";
-			else
-				defaultUri = "/data/media/0/test.mp4";
-			String uri = System.getProperty("media.test.uri" + index, defaultUri);
-			Log.d(TAG, "=============" + System.getProperty("media.test.uri0"));
-			Log.d(TAG, "index=" + index + ", uri=" + uri);
 			mPlayers[index] = new PlayerThread(holder.getSurface(), getMovideFileName(index));
-
 		}
 
 		// int index = indexOf(holder);
@@ -306,8 +306,14 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		public void run()
 		{
 			extractor = new MediaExtractor();
-
-			extractor.setDataSource(uri);
+                        try
+			{    
+				extractor.setDataSource(uri);
+            }
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
 
 			for (int i = 0; i < extractor.getTrackCount(); i++)
 			{
@@ -366,18 +372,18 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 				switch (outIndex)
 				{
 				case MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED:
-					Log.d("DecodeActivity", "INFO_OUTPUT_BUFFERS_CHANGED");
+					//Log.d("DecodeActivity", "INFO_OUTPUT_BUFFERS_CHANGED");
 					outputBuffers = decoder.getOutputBuffers();
 					break;
 				case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
-					Log.d("DecodeActivity", "New format " + decoder.getOutputFormat());
+					//Log.d("DecodeActivity", "New format " + decoder.getOutputFormat());
 					break;
 				case MediaCodec.INFO_TRY_AGAIN_LATER:
-					Log.d("DecodeActivity", "dequeueOutputBuffer timed out!");
+					//Log.d("DecodeActivity", "dequeueOutputBuffer timed out!");
 					break;
 				default:
 					ByteBuffer buffer = outputBuffers[outIndex];
-					Log.v("DecodeActivity", "We can't use this buffer but render it due to the API limit, " + buffer);
+					//Log.v("DecodeActivity", "We can't use this buffer but render it due to the API limit, " + buffer);
 
 					// We use a very simple clock to keep the video FPS, or the
 					// video
@@ -405,7 +411,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 					break;
 				}
 			}
-                        this.surface.release();
+            //this.surface.release();
 			decoder.stop();
 			decoder.release();
 			extractor.release();
