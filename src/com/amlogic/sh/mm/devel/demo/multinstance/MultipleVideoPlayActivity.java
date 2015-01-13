@@ -36,7 +36,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 	private boolean[] mVideoReady = new boolean[SURFACE_RES_IDS.length];
 	private PlayerThread[] mPlayers = new PlayerThread[SURFACE_RES_IDS.length];
 	private String[] mUries = new String[SURFACE_RES_IDS.length];
-
+	public static boolean HWDecoderInited = false;
 	@Override
 	public void onCreate(Bundle icicle)
 	{
@@ -175,7 +175,17 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		Log.d(TAG, "SurfaceHolder(" + indexOf(holder) + "): surfaceCreated called");
 
 		int index = indexOf(holder);
-
+		if(index==1)
+		{
+				try 
+				{
+            		Thread.sleep(2000);
+        		} 
+        		catch (InterruptedException e) 
+        		{
+            		e.printStackTrace(); 
+        		}
+		}
 		if (mPlayers[index] == null)
 		{
 			mPlayers[index] = new PlayerThread(holder.getSurface(), getMovideFileName(index));
@@ -307,7 +317,7 @@ public class MultipleVideoPlayActivity extends Activity implements SurfaceHolder
 		{
 			extractor = new MediaExtractor();
                         try
-			{    
+			{
 				extractor.setDataSource(uri);
             }
 			catch(IOException e)
